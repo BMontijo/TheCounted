@@ -6,21 +6,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.amontes.thecounted.MainActivity"
+    android:background="@color/lightBackground"
     tools:showIn="@layout/app_bar_main">
 
+    <ImageView
+        android:contentDescription="@string/ticker_background"
+        android:background="@color/colorPrimary"
+        android:layout_width="fill_parent"
+        android:layout_height="120dp"
+        app:srcCompat="?android:attr/selectableItemBackground"
+        android:layout_centerVertical="true"
+        android:id="@+id/counterBackground" />
+
     <TextView
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/counterColor"
         android:textStyle="bold"
-        android:textSize="36sp"
+        android:textSize="120sp"
         android:text=""
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:id="@+id/recentNumberText" />
+
 </RelativeLayout>

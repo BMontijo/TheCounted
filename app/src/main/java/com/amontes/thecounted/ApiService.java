@@ -38,6 +38,7 @@ public class ApiService extends IntentService {
             InputStream is = connection.getInputStream();
             String jsonDataString = IOUtils.toString(is);
             JSONArray jsonArray = new JSONArray(jsonDataString);
+            // Current number of killed for specific year.
             currentNum = String.valueOf(jsonArray.length());
 
         } catch (IOException | JSONException e) {
@@ -46,7 +47,7 @@ public class ApiService extends IntentService {
 
         }
 
-        // Broadcast to update list.
+        // Broadcast to update TextView in MainActivity.
         Intent toMain = new Intent("com.fullsail.android.ACTION_UPDATE_UI");
         toMain.putExtra("Current", currentNum);
         this.sendBroadcast(toMain);

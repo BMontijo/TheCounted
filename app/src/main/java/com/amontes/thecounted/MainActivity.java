@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity
 
     // Global variables.
     TextView currentNumber;
+    int year;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +39,8 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                startService();
+                Snackbar.make(view, "Current number has been refreshed!", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
             }
         });
@@ -54,12 +56,10 @@ public class MainActivity extends AppCompatActivity
 
         // Get current year.
         Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
+        year = calendar.get(Calendar.YEAR);
 
         // Initial API call.
-        Intent intent = new Intent(this, ApiService.class);
-        intent.putExtra("Year", year);
-        startService(intent);
+        startService();
 
         // TextView to be updated.
         currentNumber = (TextView)findViewById(R.id.recentNumberText);
@@ -136,6 +136,15 @@ public class MainActivity extends AppCompatActivity
         }
 
     };
+
+    // Start IntentService.
+    protected void startService(){
+
+        Intent intent = new Intent(this, ApiService.class);
+        intent.putExtra("Year", year);
+        startService(intent);
+
+    }
 
     @Override
     protected void onPause() {
