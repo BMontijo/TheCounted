@@ -29,10 +29,20 @@ public class ApiService extends IntentService {
         int year = intent.getIntExtra("Year", 0);
         String stringValueYear = String.valueOf(year);
         String currentNum = null;
+        String apiEndpoint;
 
         try{
 
-            String apiEndpoint = "https://thecountedapi.com/api/counted/?year=" + stringValueYear;
+            if(year == 0){
+
+                apiEndpoint = "https://thecountedapi.com/api/counted";
+
+            }else{
+
+                apiEndpoint = "https://thecountedapi.com/api/counted/?year=" + stringValueYear;
+
+            }
+
             URL url = new URL(apiEndpoint);
             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
             InputStream is = connection.getInputStream();
@@ -49,7 +59,8 @@ public class ApiService extends IntentService {
 
         // Broadcast to update TextView in MainActivity.
         Intent toMain = new Intent("com.fullsail.android.ACTION_UPDATE_UI");
-        toMain.putExtra("Current", currentNum);
+        toMain.putExtra("Number", currentNum)
+                .putExtra("Year", stringValueYear);
         this.sendBroadcast(toMain);
 
     }

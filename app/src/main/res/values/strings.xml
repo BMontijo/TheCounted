@@ -7,4 +7,11 @@
     <string name="action_settings">Settings</string>
     <string name="count_placeholder">000</string>
     <string name="ticker_background">ticker_background</string>
+    <string name="people_killed_in">PEOPLE KILLED IN</string>
+    <string name="the_counted">The Counted</string>
+    <string name="people_killed_by_police_in_the_us">People killed by police in the US</string>
+    <string name="total">Total</string>
+    <string name="_2016">2016</string>
+    <string name="_2015">2015</string>
+    <string name="nav_drawer_icon">nav drawer icon</string>
 </resources>

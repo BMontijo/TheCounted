@@ -1,5 +1,6 @@
 package com.amontes.thecounted;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,8 +26,10 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     // Global variables.
-    TextView currentNumber;
-    int year;
+    private TextView currentNumber;
+    private int year;
+    private TextView chosenYear;
+    private ProgressDialog mProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +62,12 @@ public class MainActivity extends AppCompatActivity
         year = calendar.get(Calendar.YEAR);
 
         // Initial API call.
+        startProgressDialog();
         startService();
 
-        // TextView to be updated.
+        // TextViews to be updated.
         currentNumber = (TextView)findViewById(R.id.recentNumberText);
+        chosenYear = (TextView) findViewById(R.id.yearText);
 
     }
 
@@ -83,16 +88,34 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    // Get user's chosen time frame and update UI.
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(id){
+
+            case R.id.action_total:
+                year = 0;
+                startProgressDialog();
+                startService();
+                break;
+
+            case R.id.action_2016:
+                year = 2016;
+                startProgressDialog();
+                startService();
+                break;
+
+            case R.id.action_2015:
+                year = 2015;
+                startProgressDialog();
+                startService();
+                break;
+
+            default:
+                break;
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -129,13 +152,33 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent) {
 
+            String yearToShow = intent.getStringExtra("Year");
+            if(yearToShow.equals(String.valueOf(0))){
+
+                yearToShow = "TOTAL";
+
+            }
+
             // Display year's current number.
-            String numToDisplay = intent.getStringExtra("Current");
-            currentNumber.setText(numToDisplay);
+            chosenYear.setText(yearToShow);
+            currentNumber.setText(intent.getStringExtra("Number"));
+            mProgress.cancel();
 
         }
 
     };
+
+    // Start progress dialog.
+    protected void startProgressDialog() {
+        mProgress = new ProgressDialog(MainActivity.this);
+        //mProgress.setIcon(R.drawable.beer_icon_progress);
+        mProgress.setTitle("Working");
+        mProgress.setIndeterminate(false);
+        mProgress.setMessage("Retrieving latest data.");
+        mProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        mProgress.setCancelable(false);
+        mProgress.show();
+    }
 
     // Start IntentService.
     protected void startService(){

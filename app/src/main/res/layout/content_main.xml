@@ -12,6 +12,37 @@
     android:background="@color/lightBackground"
     tools:showIn="@layout/app_bar_main">
 
+    <TextView
+        android:text="@string/people_killed_in"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/thinLine"
+        android:layout_alignStart="@+id/thinLine"
+        android:id="@+id/peopleKilledText" />
+
+    <TextView
+        android:layout_marginStart="6dp"
+        android:text=""
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/thinLine"
+        android:layout_toEndOf="@+id/peopleKilledText"
+        android:id="@+id/yearText" />
+
+    <View
+        android:id="@+id/thinLine"
+        android:layout_height="1dp"
+        android:layout_width="match_parent"
+        android:background="@color/white"
+        android:layout_above="@+id/counterBackground"
+        android:layout_marginBottom="10dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"/>
+
     <ImageView
         android:contentDescription="@string/ticker_background"
         android:background="@color/colorPrimary"
