@@ -7,9 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
 import java.util.Calendar;
@@ -38,7 +35,8 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        // TODO: Decide if FAB is needed or just obstructive at this point.
+        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -46,7 +44,7 @@ public class MainActivity extends AppCompatActivity
                 Snackbar.make(view, "Current number has been refreshed!", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
             }
-        });
+        });*/
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -61,7 +59,8 @@ public class MainActivity extends AppCompatActivity
         Calendar calendar = Calendar.getInstance();
         year = calendar.get(Calendar.YEAR);
 
-        // Initial API call.
+        // Initial API call. Should only be called on initial launch, then saved, then AlarmManager will update afterwards.
+        // Use conditional statement: if(save exists){skip service} else {run service}.
         startProgressDialog();
         startService();
 
