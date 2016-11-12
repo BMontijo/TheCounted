@@ -7,17 +7,22 @@ import android.util.Log;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class ApiService extends IntentService {
 
-    String currentNum = null;
-    String apiEndpoint;
-
+    ArrayList<Victim> victimArray = new ArrayList<>();
     final String TAG = "ApiService";
 
     // Default constructor.
@@ -30,133 +35,144 @@ public class ApiService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        boolean isTotal = false;
-        int year = intent.getIntExtra("Year", 0);
-        String stringValueYear = String.valueOf(year);
+        int counter = 0;
+        int apiYear = intent.getIntExtra("Year", 0);
+        String stringValueYear = String.valueOf(apiYear);
         String numAll = null;
-        String numUnknown = null;
-        String numWhite = null;
-        String numHispanic = null;
-        String numBlack = null;
-        String numAsian = null;
-        String numNative = null;
-        String raceApiEndpoint;
+        String name;
+        String age;
+        String sex;
+        String race;
+        String month;
+        String day;
+        String year;
+        String address;
+        String city;
+        String state;
+        String cause;
+        String dept;
+        String armed;
 
-        if(year == 0){
+        // If saved array exists utilize it before making an unnecessary API call!
+        // Add boolean later to check if scheduled update(send as Extra)! This will skip saved data, call API, and update stored array.
+        if(fileExistence("Victims")){
 
-            apiEndpoint = "https://thecountedapi.com/api/counted";
-            isTotal = true;
+            Log.d(TAG, "SAVE EXISTS! USING SAVED DATA!!!!");
+            ArrayList<Victim> savedArray = null;
+
+            try {
+
+                FileInputStream fis = getBaseContext().openFileInput("Victims");
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                savedArray = (ArrayList<Victim>) ois.readObject();
+                ois.close();
+
+            } catch (IOException | ClassNotFoundException e) {
+
+                e.printStackTrace();
+
+            }
+
+            victimArray = savedArray;
 
         }else{
 
-            apiEndpoint = "https://thecountedapi.com/api/counted/?year=" + stringValueYear;
+            Log.d(TAG, "THERE IS NO SAVED DATA! CALLING API FOR UPDATE");
 
-        }
+            try {
 
-        // Loop through all possible endpoints by race to get total number killed for each.
-        for(int i=0; i<7; i++){
+                String apiEndpoint = "https://thecountedapi.com/api/counted";
+                URL url = new URL(apiEndpoint);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                InputStream is = connection.getInputStream();
+                String jsonDataString = IOUtils.toString(is);
+                JSONArray jsonArray = new JSONArray(jsonDataString);
 
-            switch(i) {
+                for (int i = 0; i < jsonArray.length(); i++) {
 
-                case 0:
-                    raceApiEndpoint = apiEndpoint;
-                    numAll = getNumberKilled(raceApiEndpoint);
-                    break;
+                    JSONObject victimObject = jsonArray.getJSONObject(i);
+                    // Parse object elements and create custom "Victim" objects then add to array.
+                    name = victimObject.getString("name");
+                    age = victimObject.getString("age");
+                    sex = victimObject.getString("sex");
+                    race = victimObject.getString("race");
+                    month = victimObject.getString("month");
+                    day = victimObject.getString("day");
+                    year = victimObject.getString("year");
+                    address = victimObject.getString("address");
+                    city = victimObject.getString("city");
+                    state = victimObject.getString("state");
+                    cause = victimObject.getString("cause");
+                    dept = victimObject.getString("dept");
+                    armed = victimObject.getString("armed");
 
-                case 1:
-                    if(isTotal){
+                    Victim victim = new Victim(name, age, sex, race, month, day, year, address, city, state, cause, dept, armed);
 
-                        raceApiEndpoint = apiEndpoint + "/?race=unknown";
+                    victimArray.add(victim);
 
-                    }else{
+                }
 
-                        raceApiEndpoint = apiEndpoint + "&race=unknown";
+                is.close();
 
-                    }
-                    numUnknown = getNumberKilled(raceApiEndpoint);
-                    break;
+            } catch (IOException | JSONException e) {
 
-                case 2:
-                    if(isTotal){
-
-                        raceApiEndpoint = apiEndpoint + "/?race=white";
-
-                    }else{
-
-                        raceApiEndpoint = apiEndpoint + "&race=white";
-
-                    }
-                    numWhite = getNumberKilled(raceApiEndpoint);
-                    break;
-
-                case 3:
-                    if(isTotal){
-
-                        raceApiEndpoint = apiEndpoint + "/?race=hispanic/latino";
-
-                    }else{
-
-                        raceApiEndpoint = apiEndpoint + "&race=hispanic/latino";
-
-                    }
-                    numHispanic = getNumberKilled(raceApiEndpoint);
-                    break;
-
-                case 4:
-                    if(isTotal){
-
-                        raceApiEndpoint = apiEndpoint + "/?race=black";
-
-                    }else{
-
-                        raceApiEndpoint = apiEndpoint + "&race=black";
-
-                    }
-                    numBlack = getNumberKilled(raceApiEndpoint);
-                    break;
-
-                case 5:
-                    if(isTotal){
-
-                        raceApiEndpoint = apiEndpoint + "/?race=asian/pacific%20islander";
-
-                    }else{
-
-                        raceApiEndpoint = apiEndpoint + "&race=asian/pacific%20islander";
-
-                    }
-                    numAsian = getNumberKilled(raceApiEndpoint);
-                    break;
-
-                case 6:
-                    if(isTotal){
-
-                        raceApiEndpoint = apiEndpoint + "/?race=native%20american";
-
-                    }else{
-
-                        raceApiEndpoint = apiEndpoint + "&race=native%20american";
-
-                    }
-                    numNative = getNumberKilled(raceApiEndpoint);
-                    break;
-
-                default:
-                    break;
+                e.printStackTrace();
 
             }
 
         }
 
-        Log.d(TAG, "Unknown race killed: " + numUnknown);
-        Log.d(TAG, "Hispanics killed: " + numHispanic);
-        Log.d(TAG, "Blacks killed: " + numBlack);
-        Log.d(TAG, "Whites killed: " + numWhite);
-        Log.d(TAG, "Natives killed: " + numNative);
-        Log.d(TAG, "Asians killed: " + numAsian);
-        Log.d(TAG, "Total killed: " + numAll);
+        // Save array to storage.
+        File dataFile = new File(getBaseContext().getFilesDir(), "Victims");
+        try {
 
-        // Broadcast to update TextView in MainActivity.
+            FileOutputStream fos = new FileOutputStream(dataFile);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(victimArray);
+            oos.close();
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        }
+
+        // Check which total should be returned according to year.
+        if(apiYear == 0) {
+
+            numAll = String.valueOf(victimArray.size());
+
+        }else if(apiYear == 2016){
+
+            for (int i = 0; i < victimArray.size(); i++) {
+
+                if (victimArray.get(i).getYear().equals("2016")) {
+
+                    counter = counter+1;
+
+                }
+
+                numAll = String.valueOf(counter);
+
+            }
+
+        }else if(apiYear == 2015){
+
+            for (int i = 0; i < victimArray.size(); i++) {
+
+                if (victimArray.get(i).getYear().equals("2015")) {
+
+                    counter = counter+1;
+
+                }
+
+                numAll = String.valueOf(counter);
+
+            }
+
+        }
+
+        // Broadcast to update TextViews in MainActivity.
         Intent toMain = new Intent("com.fullsail.android.ACTION_UPDATE_UI");
         toMain.putExtra("Number", numAll)
                 .putExtra("Year", stringValueYear);
@@ -164,25 +180,11 @@ public class ApiService extends IntentService {
 
     }
 
-    // Take passed in endpoint and return total number.
-    protected String getNumberKilled(String endpoint){
-        try{
+    // Check if file exists.
+    public boolean fileExistence(String fName){
 
-            URL url = new URL(endpoint);
-            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-            InputStream is = connection.getInputStream();
-            String jsonDataString = IOUtils.toString(is);
-            JSONArray jsonArray = new JSONArray(jsonDataString);
-            // Current number of killed for specific year.
-            currentNum = String.valueOf(jsonArray.length());
-
-        } catch (IOException | JSONException e) {
-
-            e.printStackTrace();
-
-        }
-
-        return currentNum;
+        File file = getBaseContext().getFileStreamPath(fName);
+        return file.exists();
 
     }
 
