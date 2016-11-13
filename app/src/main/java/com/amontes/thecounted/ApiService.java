@@ -10,11 +10,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -58,22 +56,7 @@ public class ApiService extends IntentService {
         if(fileExistence("Victims")){
 
             Log.d(TAG, "SAVE EXISTS! USING SAVED DATA!!!!");
-            ArrayList<Victim> savedArray = null;
-
-            try {
-
-                FileInputStream fis = getBaseContext().openFileInput("Victims");
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                savedArray = (ArrayList<Victim>) ois.readObject();
-                ois.close();
-
-            } catch (IOException | ClassNotFoundException e) {
-
-                e.printStackTrace();
-
-            }
-
-            victimArray = savedArray;
+            victimArray = DataHelper.getSavedData(this);
 
         }else{
 

@@ -17,6 +17,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity
     private int year;
     private TextView chosenYear;
     private ProgressDialog mProgress;
+    private int counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,18 +58,41 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // TextViews to be updated.
+        currentNumber = (TextView)findViewById(R.id.recentNumberText);
+        chosenYear = (TextView) findViewById(R.id.yearText);
+
         // Get current year.
         Calendar calendar = Calendar.getInstance();
         year = calendar.get(Calendar.YEAR);
 
         // Initial API call. Should only be called on initial launch, then saved, then AlarmManager will update afterwards.
         // Use conditional statement: if(save exists){skip service} else {run service}.
-        startProgressDialog();
-        startService();
+        if(fileExistence("Victims")){
 
-        // TextViews to be updated.
-        currentNumber = (TextView)findViewById(R.id.recentNumberText);
-        chosenYear = (TextView) findViewById(R.id.yearText);
+            ArrayList<Victim> loadedArray = DataHelper.getSavedData(this);
+
+            // Populate UI with existing data.
+            chosenYear.setText(String.valueOf(year));
+
+            for (int i = 0; i < loadedArray.size(); i++) {
+
+                if (loadedArray.get(i).getYear().equals(String.valueOf(year))) {
+
+                    counter = counter+1;
+
+                }
+
+                currentNumber.setText(String.valueOf(counter));
+
+            }
+
+        }else{
+
+            startProgressDialog();
+            startService();
+
+        }
 
     }
 
@@ -127,8 +153,11 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
+        if (id == R.id.nav_graph) {
+
+            Intent intent = new Intent(MainActivity.this, GraphingActivity.class);
+            startActivity(intent);
+
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
@@ -205,6 +234,14 @@ public class MainActivity extends AppCompatActivity
         IntentFilter recFilter = new IntentFilter();
         recFilter.addAction("com.fullsail.android.ACTION_UPDATE_UI");
         registerReceiver(currentNumReceiver, recFilter);
+
+    }
+
+    // Check if file exists.
+    public boolean fileExistence(String fName){
+
+        File file = getBaseContext().getFileStreamPath(fName);
+        return file.exists();
 
     }
 

@@ -24,7 +24,11 @@
 
         <service android:name=".ApiService" />
 
-        <activity android:name=".GraphingActivity"></activity>
+        <activity android:name=".GraphingActivity"
+            android:label="@string/race_child"
+            android:parentActivityName=".MainActivity">
+        </activity>
+
     </application>
 
 </manifest>
