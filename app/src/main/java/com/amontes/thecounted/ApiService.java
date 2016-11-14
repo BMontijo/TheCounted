@@ -2,13 +2,13 @@ package com.amontes.thecounted;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
-
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,7 +16,10 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class ApiService extends IntentService {
 
@@ -34,33 +37,24 @@ public class ApiService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
         int counter = 0;
+        boolean cancel = intent.getBooleanExtra("Progress", true);
+        boolean shouldCall = intent.getBooleanExtra("Fresh", false);
         int apiYear = intent.getIntExtra("Year", 0);
         String stringValueYear = String.valueOf(apiYear);
         String numAll = null;
-        String name;
-        String age;
-        String sex;
-        String race;
-        String month;
-        String day;
-        String year;
-        String address;
-        String city;
-        String state;
-        String cause;
-        String dept;
-        String armed;
+        String name, age, sex, race, month, day, year, address, city, state, cause, dept, armed;
+        String updateTime = "";
 
         // If saved array exists utilize it before making an unnecessary API call!
         // Add boolean later to check if scheduled update(send as Extra)! This will skip saved data, call API, and update stored array.
-        if(fileExistence("Victims")){
+        if(fileExistence("Victims") && !shouldCall){
 
             Log.d(TAG, "SAVE EXISTS! USING SAVED DATA!!!!");
-            victimArray = DataHelper.getSavedData(this);
+            victimArray = DataHelper.getSavedData(getApplicationContext());
 
         }else{
 
-            Log.d(TAG, "THERE IS NO SAVED DATA! CALLING API FOR UPDATE");
+            Log.d(TAG, "THERE IS NO SAVED DATA!(Or Fresh Data Needed) CALLING API FOR UPDATE");
 
             try {
 
@@ -102,6 +96,16 @@ public class ApiService extends IntentService {
                 e.printStackTrace();
 
             }
+
+            // Get current date and time to display to user.
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US);
+            updateTime = "*Last update: "+sdf.format(calendar.getTime());
+            // Save time stamp in default shared preferences.
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("Current", updateTime);
+            editor.apply();
 
         }
 
@@ -158,7 +162,9 @@ public class ApiService extends IntentService {
         // Broadcast to update TextViews in MainActivity.
         Intent toMain = new Intent("com.fullsail.android.ACTION_UPDATE_UI");
         toMain.putExtra("Number", numAll)
-                .putExtra("Year", stringValueYear);
+                .putExtra("Year", stringValueYear)
+                .putExtra("Progress", cancel)
+                .putExtra("Update", updateTime);
         this.sendBroadcast(toMain);
 
     }

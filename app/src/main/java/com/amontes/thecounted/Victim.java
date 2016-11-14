@@ -2,7 +2,7 @@ package com.amontes.thecounted;
 
 import java.io.Serializable;
 
-public class Victim implements Serializable{
+class Victim implements Serializable{
 
     private String name;
     private String age;
@@ -19,7 +19,7 @@ public class Victim implements Serializable{
     private String armed;
 
     // Constructor.
-    public Victim(String name, String age, String sex, String race, String month, String day, String year, String address, String city, String state, String cause, String dept, String armed) {
+    Victim(String name, String age, String sex, String race, String month, String day, String year, String address, String city, String state, String cause, String dept, String armed) {
 
         this.name = name;
         this.age = age;
@@ -115,7 +115,7 @@ public class Victim implements Serializable{
         return day;
     }
 
-    public String getYear() {
+    String getYear() {
         return year;
     }
 

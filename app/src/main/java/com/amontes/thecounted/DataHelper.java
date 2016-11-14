@@ -1,15 +1,14 @@
 package com.amontes.thecounted;
 
 import android.content.Context;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
-public class DataHelper {
+class DataHelper {
 
-    public static ArrayList<Victim> getSavedData(Context context){
+    static ArrayList<Victim> getSavedData(Context context){
 
         ArrayList<Victim> savedArray = null;
 
