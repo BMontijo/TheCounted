@@ -142,4 +142,5 @@ class Victim implements Serializable{
     public String getArmed() {
         return armed;
     }
+
 }

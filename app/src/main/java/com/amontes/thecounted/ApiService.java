@@ -110,7 +110,7 @@ public class ApiService extends IntentService {
         }
 
         // Save array to storage.
-        File dataFile = new File(getBaseContext().getFilesDir(), "Victims");
+        File dataFile = new File(getBaseContext().getFilesDir(), "TheCountedVictims");
         try {
 
             FileOutputStream fos = new FileOutputStream(dataFile);

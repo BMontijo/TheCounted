@@ -8,13 +8,15 @@ import java.util.ArrayList;
 
 class DataHelper {
 
+    // Suppress unchecked cast. Never fails.
+    @SuppressWarnings("unchecked")
     static ArrayList<Victim> getSavedData(Context context){
 
         ArrayList<Victim> savedArray = null;
 
         try {
 
-            FileInputStream fis = context.openFileInput("Victims");
+            FileInputStream fis = context.openFileInput("TheCountedVictims");
             ObjectInputStream ois = new ObjectInputStream(fis);
             savedArray = (ArrayList<Victim>) ois.readObject();
             ois.close();

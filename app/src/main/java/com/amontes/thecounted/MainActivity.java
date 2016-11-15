@@ -11,9 +11,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -21,11 +21,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -46,10 +46,19 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         // AlarmManager to update data every night at 10:30.
+        // Random hour and minutes so as not to flood the server. (Between 10:30 and 11:59)
+        Random r = new Random();
+        int lowHour = 22;
+        int highHour = 23;
+        int lowMins = 30;
+        int highMins = 59;
+        int hour = r.nextInt(highHour-lowHour) + lowHour;
+        int mins = r.nextInt(highMins-lowMins) + lowMins;
+
         Calendar calendar = Calendar.getInstance();
         year = calendar.get(Calendar.YEAR);
-        calendar.set(Calendar.HOUR_OF_DAY, 22); // 10PM 22.
-        calendar.set(Calendar.MINUTE, 30); // 30 minutes.
+        calendar.set(Calendar.HOUR_OF_DAY, hour);
+        calendar.set(Calendar.MINUTE, mins);
         calendar.set(Calendar.SECOND, 0);
         Intent intent = new Intent(MainActivity.this , ApiService.class);
         intent.putExtra("Year", year)
@@ -60,7 +69,7 @@ public class MainActivity extends AppCompatActivity
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY , pendingIntent);
 
         // TODO: Decide if FAB is needed or just obstructive at this point.
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -72,7 +81,7 @@ public class MainActivity extends AppCompatActivity
                 Snackbar.make(view, "Requesting fresh data! Please wait.", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
             }
-        });
+        });*/
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -89,8 +98,7 @@ public class MainActivity extends AppCompatActivity
         lastPull = (TextView) findViewById(R.id.updateTime);
 
         // Initial API call. Should only be called on initial launch, then saved, then AlarmManager will update afterwards.
-        // Use conditional statement: if(save exists){skip service} else {run service}.
-        if(fileExistence("Victims")){
+        if(fileExistence("TheCountedVictims")){
 
             ArrayList<Victim> loadedArray = DataHelper.getSavedData(MainActivity.this);
 
@@ -109,7 +117,6 @@ public class MainActivity extends AppCompatActivity
                 // Load last update "time stamp" from default shared preferences.
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                 lastPull.setText(preferences.getString("Current", ""));
-
 
             }
 
@@ -175,6 +182,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+
     }
 
     // TODO: Add specific nav items to application. Use Fragments! V4!
@@ -183,8 +191,13 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        Fragment fragment;
 
         if (id == R.id.nav_graph) {
+
+            fragment = new GraphingFragment();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragmentContainer, fragment).commit();
 
         } else if (id == R.id.nav_gallery) {
 
