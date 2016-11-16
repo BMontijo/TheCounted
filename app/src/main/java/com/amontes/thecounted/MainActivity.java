@@ -7,23 +7,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
+
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -45,9 +43,93 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Initial API call. Should only be called on initial launch, then saved, then AlarmManager will update afterwards.
+        /*if(fileExistence("TheCountedVictims")){
+
+            ArrayList<Victim> loadedArray = DataHelper.getSavedData(this);
+
+            // Populate UI with existing data.
+            chosenYear.setText(String.valueOf(year));
+
+            for (int i = 0; i < loadedArray.size(); i++) {
+
+                if (loadedArray.get(i).getYear().equals(String.valueOf(year))) {
+
+                    counter = counter+1;
+
+                }
+
+                // Load last update "time stamp" from default shared preferences.
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                // Populate UI with existing data.
+                chosenYear.setText(String.valueOf(year));
+                currentNumber.setText(String.valueOf(counter));
+                // Load last update "time stamp" from default shared preferences.
+                lastPull.setText(preferences.getString("Current", ""));
+
+            }
+
+        }else{*/
+
+        if(!fileExistence("TheCountedVictims")) {
+            startProgressDialog("Please Wait", "Pulling fresh data for " + year);
+            Intent initialIntent = new Intent(this, ApiService.class);
+            initialIntent.putExtra("Year", year)
+                    .putExtra("Fresh", true);
+            startService(initialIntent);
+        }
+
+        //}
+
+        Log.d("MAINACTIVITY", "INSIDE ONCREATE!!!!!");
+        Calendar calendar = Calendar.getInstance();
+        year = calendar.get(Calendar.YEAR);
+
         // AlarmManager to update data every night at 10:30.
         // Random hour and minutes so as not to flood the server. (Between 10:30 and 11:59)
-        Random r = new Random();
+        boolean alarmUp = (PendingIntent.getService(this, 0, new Intent(this, ApiService.class), PendingIntent.FLAG_NO_CREATE) != null);
+        if(!alarmUp) {
+            Random r = new Random();
+            int lowHour = 22;
+            int highHour = 23;
+            int lowMins = 30;
+            int highMins = 59;
+            int hour = r.nextInt(highHour - lowHour) + lowHour;
+            int mins = r.nextInt(highMins - lowMins) + lowMins;
+
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, mins);
+            calendar.set(Calendar.SECOND, 0);
+            Intent intent = new Intent(this, ApiService.class);
+            intent.putExtra("Year", year)
+                    .putExtra("Fresh", true)
+                    .putExtra("Progress", false);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, 0);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+
+        }
+
+        // Load initial Fragment.
+        if(savedInstanceState == null){
+
+            Fragment fragment = null;
+            Class fragmentClass;
+            fragmentClass = HomeFragment.class;
+            try {
+                fragment = (Fragment) fragmentClass.newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.fragmentContainer, fragment).commit();
+
+        }
+
+        // AlarmManager to update data every night at 10:30.
+        // Random hour and minutes so as not to flood the server. (Between 10:30 and 11:59)
+        /*Random r = new Random();
         int lowHour = 22;
         int highHour = 23;
         int lowMins = 30;
@@ -66,7 +148,7 @@ public class MainActivity extends AppCompatActivity
                 .putExtra("Progress", false);
         AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
         PendingIntent pendingIntent = PendingIntent.getService(MainActivity.this, 0, intent, 0);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY , pendingIntent);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY , pendingIntent);*/
 
         // TODO: Decide if FAB is needed or just obstructive at this point.
         /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -93,17 +175,14 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         // TextViews to be updated.
-        currentNumber = (TextView)findViewById(R.id.recentNumberText);
-        chosenYear = (TextView) findViewById(R.id.yearText);
+        /*currentNumber = (TextView)findViewById(R.id.recentNumberText);
+        chosenYear = (TextView) findViewById(R.id.yearText);*/
         lastPull = (TextView) findViewById(R.id.updateTime);
 
         // Initial API call. Should only be called on initial launch, then saved, then AlarmManager will update afterwards.
-        if(fileExistence("TheCountedVictims")){
+        /*if(fileExistence("TheCountedVictims")){
 
             ArrayList<Victim> loadedArray = DataHelper.getSavedData(MainActivity.this);
-
-            // Populate UI with existing data.
-            chosenYear.setText(String.valueOf(year));
 
             for (int i = 0; i < loadedArray.size(); i++) {
 
@@ -113,9 +192,12 @@ public class MainActivity extends AppCompatActivity
 
                 }
 
-                currentNumber.setText(String.valueOf(counter));
                 // Load last update "time stamp" from default shared preferences.
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+
+                // Populate UI with existing data.
+                chosenYear.setText(String.valueOf(year));
+                currentNumber.setText(String.valueOf(counter));
                 lastPull.setText(preferences.getString("Current", ""));
 
             }
@@ -128,7 +210,7 @@ public class MainActivity extends AppCompatActivity
                     .putExtra("Fresh", true);
             startService(initialIntent);
 
-        }
+        }*/
 
     }
 
@@ -143,16 +225,18 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+
     // Inflate menu.
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
-    }
+    }*/
 
     // Get user's chosen time frame from overflow menu item and update UI.
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
@@ -183,7 +267,7 @@ public class MainActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
 
-    }
+    }*/
 
     // TODO: Add specific nav items to application. Use Fragments! V4!
     @SuppressWarnings("StatementWithEmptyBody")
@@ -191,15 +275,15 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        Fragment fragment;
+        Fragment fragment = null;
 
-        if (id == R.id.nav_graph) {
+        if (id == R.id.nav_home) {
+
+            fragment = new HomeFragment();
+
+        } else if (id == R.id.nav_graph) {
 
             fragment = new GraphingFragment();
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.fragmentContainer, fragment).commit();
-
-        } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
 
@@ -213,7 +297,13 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
+        // Replace FrameLayout with chosen Fragment.
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.fragmentContainer, fragment).commit();
+
         return true;
+
     }
 
     // Local BroadcastReceiver.
@@ -223,7 +313,7 @@ public class MainActivity extends AppCompatActivity
 
             String refreshTime = intent.getStringExtra("Update");
             boolean cancel = intent.getBooleanExtra("Progress", true);
-            String yearToShow = intent.getStringExtra("Year");
+            /*String yearToShow = intent.getStringExtra("Year");
             if(yearToShow.equals(String.valueOf(0))){
 
                 yearToShow = "TOTAL";
@@ -232,7 +322,7 @@ public class MainActivity extends AppCompatActivity
 
             // Display selected year, current tally, and update time.
             chosenYear.setText(yearToShow);
-            currentNumber.setText(intent.getStringExtra("Number"));
+            currentNumber.setText(intent.getStringExtra("Number"));*/
             if(cancel) {
 
                 mProgress.cancel();
@@ -261,13 +351,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     // Start IntentService.
-    protected void fireService(){
+    /*protected void fireService(){
 
         Intent intent = new Intent(this, ApiService.class);
         intent.putExtra("Year", year);
         startService(intent);
 
-    }
+    }*/
 
     @Override
     protected void onPause() {
@@ -297,4 +387,12 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Application has been killed. Wipe SharedPreferences so data is loaded on new start.
+
+
+    }
 }
