@@ -3,12 +3,15 @@ package com.amontes.thecounted;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,58 +39,51 @@ public class ApiService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        int counter = 0;
         boolean cancel = intent.getBooleanExtra("Progress", true);
-        boolean shouldCall = intent.getBooleanExtra("Fresh", false);
+        //boolean shouldCall = intent.getBooleanExtra("Fresh", false);
         int apiYear = intent.getIntExtra("Year", 0);
-        String stringValueYear = String.valueOf(apiYear);
-        String numAll = null;
+        //String stringValueYear = String.valueOf(apiYear);
+        //String numAll = null;
+        int progressCount = 0;
         String name, age, sex, race, month, day, year, address, city, state, cause, dept, armed;
         String updateTime = "";
 
-        // If saved array exists utilize it before making an unnecessary API call!
-        // Add boolean later to check if scheduled update(send as Extra)! This will skip saved data, call API, and update stored array.
-        if(fileExistence("Victims") && !shouldCall){
+        Log.d(TAG, "THERE IS NO SAVED DATA!(Or Fresh Data Needed) CALLING API FOR UPDATE");
 
-            Log.d(TAG, "SAVE EXISTS! USING SAVED DATA!!!!");
-            victimArray = DataHelper.getSavedData(getApplicationContext());
+        try {
 
-        }else{
+            String apiEndpoint = "https://thecountedapi.com/api/counted";
+            URL url = new URL(apiEndpoint);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            InputStream is = connection.getInputStream();
+            String jsonDataString = IOUtils.toString(is);
+            JSONArray jsonArray = new JSONArray(jsonDataString);
 
-            Log.d(TAG, "THERE IS NO SAVED DATA!(Or Fresh Data Needed) CALLING API FOR UPDATE");
+            Bundle data = new Bundle();
 
-            try {
+            for (int i = 0; i < jsonArray.length(); i++) {
 
-                String apiEndpoint = "https://thecountedapi.com/api/counted";
-                URL url = new URL(apiEndpoint);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                InputStream is = connection.getInputStream();
-                String jsonDataString = IOUtils.toString(is);
-                JSONArray jsonArray = new JSONArray(jsonDataString);
+                JSONObject victimObject = jsonArray.getJSONObject(i);
+                // Parse object elements and create custom "Victim" objects then add to array.
+                name = victimObject.getString("name");
+                age = victimObject.getString("age");
+                sex = victimObject.getString("sex");
+                race = victimObject.getString("race");
+                month = victimObject.getString("month");
+                day = victimObject.getString("day");
+                year = victimObject.getString("year");
+                address = victimObject.getString("address");
+                city = victimObject.getString("city");
+                state = victimObject.getString("state");
+                cause = victimObject.getString("cause");
+                dept = victimObject.getString("dept");
+                armed = victimObject.getString("armed");
 
-                for (int i = 0; i < jsonArray.length(); i++) {
-
-                    JSONObject victimObject = jsonArray.getJSONObject(i);
-                    // Parse object elements and create custom "Victim" objects then add to array.
-                    name = victimObject.getString("name");
-                    age = victimObject.getString("age");
-                    sex = victimObject.getString("sex");
-                    race = victimObject.getString("race");
-                    month = victimObject.getString("month");
-                    day = victimObject.getString("day");
-                    year = victimObject.getString("year");
-                    address = victimObject.getString("address");
-                    city = victimObject.getString("city");
-                    state = victimObject.getString("state");
-                    cause = victimObject.getString("cause");
-                    dept = victimObject.getString("dept");
-                    armed = victimObject.getString("armed");
-
-                    Victim victim = new Victim(name, age, sex, race, month, day, year, address, city, state, cause, dept, armed);
+                Victim victim = new Victim(name, age, sex, race, month, day, year, address, city, state, cause, dept, armed);
 
                     victimArray.add(victim);
 
-                }
+            }
 
                 is.close();
 
@@ -97,17 +93,15 @@ public class ApiService extends IntentService {
 
             }
 
-            // Get current date and time to display to user.
-            Calendar calendar = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US);
-            updateTime = "*Last update: "+sdf.format(calendar.getTime());
-            // Save time stamp in default shared preferences.
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("Current", updateTime);
-            editor.apply();
-
-        }
+        // Get current date and time to display to user.
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US);
+        updateTime = "*Last update: "+sdf.format(calendar.getTime());
+        // Save time stamp in default shared preferences.
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("Current", updateTime);
+        editor.apply();
 
         // Save array to storage.
         File dataFile = new File(getBaseContext().getFilesDir(), "TheCountedVictims");
@@ -124,56 +118,13 @@ public class ApiService extends IntentService {
 
         }
 
-        // Check which total should be returned according to year.
-        if(apiYear == 0) {
-
-            numAll = String.valueOf(victimArray.size());
-
-        }else if(apiYear == 2016){
-
-            for (int i = 0; i < victimArray.size(); i++) {
-
-                if (victimArray.get(i).getYear().equals("2016")) {
-
-                    counter = counter+1;
-
-                }
-
-                numAll = String.valueOf(counter);
-
-            }
-
-        }else if(apiYear == 2015){
-
-            for (int i = 0; i < victimArray.size(); i++) {
-
-                if (victimArray.get(i).getYear().equals("2015")) {
-
-                    counter = counter+1;
-
-                }
-
-                numAll = String.valueOf(counter);
-
-            }
-
-        }
-
-        // Broadcast to update TextViews in MainActivity.
+        // Broadcast to update TextViews.
         Intent toMain = new Intent("com.fullsail.android.ACTION_UPDATE_UI");
-        toMain.putExtra("Number", numAll)
-                .putExtra("Year", stringValueYear)
-                .putExtra("Progress", cancel)
+        //toMain.putExtra("Number", numAll)
+                //.putExtra("Year", stringValueYear)
+        toMain.putExtra("Progress", cancel)
                 .putExtra("Update", updateTime);
         this.sendBroadcast(toMain);
-
-    }
-
-    // Check if file exists.
-    public boolean fileExistence(String fName){
-
-        File file = getBaseContext().getFileStreamPath(fName);
-        return file.exists();
 
     }
 

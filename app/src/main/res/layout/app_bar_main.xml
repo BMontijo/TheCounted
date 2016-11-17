@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:background="@color/lightBackground"
     tools:context="com.amontes.thecounted.MainActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -23,10 +24,6 @@
 
     <!--<include layout="@layout/content_main" />-->
     <!-- Layout to hold Fragments -->
-    <FrameLayout
-        android:id="@+id/fragmentContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
     <android.support.design.widget.FloatingActionButton
         android:background="@color/colorPrimaryDark"
@@ -36,5 +33,12 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_action_refresh" />
+
+    <FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+    </FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>

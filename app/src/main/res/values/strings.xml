@@ -15,4 +15,5 @@
     <string name="_2015">2015</string>
     <string name="nav_drawer_icon">nav drawer icon</string>
     <string name="race_child">Race And Ethnicity</string>
+    <string name="total_label_home">TOTAL</string>
 </resources>
