@@ -40,11 +40,6 @@ public class ApiService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
         boolean cancel = intent.getBooleanExtra("Progress", true);
-        //boolean shouldCall = intent.getBooleanExtra("Fresh", false);
-        int apiYear = intent.getIntExtra("Year", 0);
-        //String stringValueYear = String.valueOf(apiYear);
-        //String numAll = null;
-        int progressCount = 0;
         String name, age, sex, race, month, day, year, address, city, state, cause, dept, armed;
         String updateTime = "";
 
@@ -120,8 +115,6 @@ public class ApiService extends IntentService {
 
         // Broadcast to update TextViews.
         Intent toMain = new Intent("com.fullsail.android.ACTION_UPDATE_UI");
-        //toMain.putExtra("Number", numAll)
-                //.putExtra("Year", stringValueYear)
         toMain.putExtra("Progress", cancel)
                 .putExtra("Update", updateTime);
         this.sendBroadcast(toMain);
