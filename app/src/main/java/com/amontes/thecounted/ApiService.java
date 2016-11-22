@@ -3,7 +3,6 @@ package com.amontes.thecounted;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -39,6 +38,7 @@ public class ApiService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
+        boolean shouldReload = intent.getBooleanExtra("Reload", false);
         boolean cancel = intent.getBooleanExtra("Progress", true);
         String name, age, sex, race, month, day, year, address, city, state, cause, dept, armed;
         String updateTime = "";
@@ -53,8 +53,6 @@ public class ApiService extends IntentService {
             InputStream is = connection.getInputStream();
             String jsonDataString = IOUtils.toString(is);
             JSONArray jsonArray = new JSONArray(jsonDataString);
-
-            Bundle data = new Bundle();
 
             for (int i = 0; i < jsonArray.length(); i++) {
 
@@ -116,7 +114,8 @@ public class ApiService extends IntentService {
         // Broadcast to update TextViews.
         Intent toMain = new Intent("com.fullsail.android.ACTION_UPDATE_UI");
         toMain.putExtra("Progress", cancel)
-                .putExtra("Update", updateTime);
+                .putExtra("Update", updateTime)
+                .putExtra("Reload", shouldReload);
         this.sendBroadcast(toMain);
 
     }

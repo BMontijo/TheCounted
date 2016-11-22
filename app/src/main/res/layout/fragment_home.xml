@@ -57,6 +57,8 @@
         android:id="@+id/recentNumberText" />
 
     <TextView
+        android:paddingStart="16dp"
+        android:paddingEnd="0dp"
         android:paddingBottom="14dp"
         android:text=""
         android:textSize="12sp"
@@ -64,7 +66,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/updateTime"
-        android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/thinLine" />
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>

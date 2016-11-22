@@ -49,9 +49,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mProgress.show();
 
             Intent initialIntent = new Intent(this, ApiService.class);
-            initialIntent.putExtra("Year", year)
-                    .putExtra("Progress", true)
-                    .putExtra("Fresh", true);
+            initialIntent.putExtra("Progress", true)
+                    .putExtra("Reload", true);
             startService(initialIntent);
 
         }else{
@@ -64,24 +63,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Random hour and minutes so as not to flood the server. (Between 10:30 and 11:59)
         boolean alarmUp = (PendingIntent.getService(this, 0, new Intent(this, ApiService.class), PendingIntent.FLAG_NO_CREATE) != null);
         if(!alarmUp) {
-            /*Random r = new Random();
-            int lowHour = 22;
-            int highHour = 23;
-            int lowMins = 30;
-            int highMins = 59;
-            int hour = r.nextInt(highHour - lowHour) + lowHour;
-            int mins = r.nextInt(highMins - lowMins) + lowMins;*/
 
             calendar.set(Calendar.HOUR_OF_DAY, 22);
             calendar.set(Calendar.MINUTE, 30);
             calendar.set(Calendar.SECOND, 0);
             Intent intent = new Intent(this, ApiService.class);
-            intent.putExtra("Year", year)
-                    .putExtra("Fresh", true)
-                    .putExtra("Progress", false);
+            intent.putExtra("Progress", false)
+                    .putExtra("Reload", false);
             AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
             PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, 0);
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+            alarmManager.setInexactRepeating(AlarmManager.RTC, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
 
         }
 
@@ -171,13 +162,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public void onReceive(Context context, Intent intent) {
 
             boolean cancel = intent.getBooleanExtra("Progress", true);
+            boolean reload = intent.getBooleanExtra("Reload", true);
             if(cancel) {
 
                 mProgress.cancel();
 
             }
 
-            loadInitialFrag();
+            if(reload) {
+
+                loadInitialFrag();
+
+            }
 
         }
 

@@ -10,4 +10,17 @@
         android:layout_width="match_parent"
         android:id="@+id/pieChart"/>
 
+    <TextView
+        android:layout_alignParentStart="true"
+        android:paddingStart="16dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="14dp"
+        android:text=""
+        android:textSize="12sp"
+        android:textColor="@color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/updateTimeGraph"
+        android:layout_alignParentBottom="true" />
+
 </RelativeLayout>
