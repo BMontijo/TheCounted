@@ -288,9 +288,9 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
             mPieChart.setCenterTextSize(10f);
             mPieChart.setCenterTextTypeface(tf);
             // radius of the center hole in percent of maximum radius
-            mPieChart.setHoleRadius(45f);
-            mPieChart.setTransparentCircleRadius(48f);
-            mPieChart.animateY(700, Easing.EasingOption.EaseInOutQuad);
+            mPieChart.setHoleRadius(40f);
+            mPieChart.setTransparentCircleRadius(42f);
+            mPieChart.animateY(650, Easing.EasingOption.EaseInOutQuad);
             mPieChart.setOnChartValueSelectedListener(GraphingFragment.this);
             mPieChart.setData(generatePieData());
 
@@ -307,7 +307,7 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
             pieEntries.add(new PieEntry(numAsian));
             pieEntries.add(new PieEntry(numNative));
 
-            PieDataSet pieDataSet = new PieDataSet(pieEntries, "Test");
+            PieDataSet pieDataSet = new PieDataSet(pieEntries, "Deaths by race.");
 
             // Colors.
             ArrayList<Integer> colors = new ArrayList<>();

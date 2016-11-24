@@ -29,6 +29,7 @@ public class HomeFragment extends Fragment {
     public static final String TAG = "HOMEFRAGMENT";
     private TextView currentNumber;
     private TextView lastPull;
+    private TextView youngText;
     private int year;
     private TextView chosenYear;
     private ProgressDialog mProgress;
@@ -43,6 +44,8 @@ public class HomeFragment extends Fragment {
         currentNumber = (TextView) view.findViewById(R.id.recentNumberText);
         chosenYear = (TextView) view.findViewById(R.id.yearText);
         lastPull = (TextView) view.findViewById(updateTime);
+        youngText = (TextView) view.findViewById(R.id.agesText);
+        youngText.setSelected(false);
 
         if(lastPull.getText().equals("")){
 
@@ -138,6 +141,10 @@ public class HomeFragment extends Fragment {
 
         private String numAll;
         private int counter = 0;
+        int compareAge;
+        int youngAge = 100;
+        int oldAge;
+        int yearArg;
 
         @Override
         protected String doInBackground(Integer... params) {
@@ -145,13 +152,31 @@ public class HomeFragment extends Fragment {
             // Pull latest data from local storage.
             ArrayList<Victim> loadedArray = DataHelper.getSavedData(getContext());
             // Parse corresponding data.
-            int yearArg = params[0];
+            yearArg = params[0];
             switch (yearArg){
 
                 case 2016:
                     for (int i = 0; i < loadedArray.size(); i++) {
 
                         if (loadedArray.get(i).getYear().equals("2016")) {
+
+                            // Obtain youngest/oldest victim's age.
+                            String thisAge = loadedArray.get(i).getAge();
+                            if(!thisAge.equals("Unknown") && thisAge.length() < 3 && !thisAge.equals(" ")) {
+                                compareAge = Integer.parseInt(loadedArray.get(i).getAge());
+                                if (compareAge < youngAge) {
+
+                                    youngAge = compareAge;
+
+                                }
+
+                                if (compareAge > oldAge){
+
+                                    oldAge = compareAge;
+
+                                }
+
+                            }
 
                             counter = counter+1;
 
@@ -167,6 +192,24 @@ public class HomeFragment extends Fragment {
 
                         if (loadedArray.get(i).getYear().equals("2015")) {
 
+                            // Obtain youngest/oldest victim's age.
+                            String thisAge = loadedArray.get(i).getAge();
+                            if(!thisAge.equals("Unknown") && thisAge.length() < 3 && !thisAge.equals(" ")) {
+                                compareAge = Integer.parseInt(loadedArray.get(i).getAge());
+                                if (compareAge < youngAge) {
+
+                                    youngAge = compareAge;
+
+                                }
+
+                                if (compareAge > oldAge){
+
+                                    oldAge = compareAge;
+
+                                }
+
+                            }
+
                             counter = counter+1;
 
                         }
@@ -178,6 +221,27 @@ public class HomeFragment extends Fragment {
 
                 case 0:
                     numAll = String.valueOf(loadedArray.size());
+                    for(int i=0; i<loadedArray.size(); i++){
+
+                        // Obtain youngest/oldest victim's age.
+                        String thisAge = loadedArray.get(i).getAge();
+                        if(!thisAge.equals("Unknown") && thisAge.length() < 3 && !thisAge.equals(" ")) {
+                            compareAge = Integer.parseInt(loadedArray.get(i).getAge());
+                            if (compareAge < youngAge) {
+
+                                youngAge = compareAge;
+
+                            }
+
+                            if (compareAge > oldAge){
+
+                                oldAge = compareAge;
+
+                            }
+
+                        }
+
+                    }
                     break;
 
                 default:
@@ -192,6 +256,30 @@ public class HomeFragment extends Fragment {
         @Override
         protected void onPostExecute(String current) {
             super.onPostExecute(current);
+
+            String preposition;
+            String stringYear = String.valueOf(yearArg);
+            if(stringYear.equals("2016") || stringYear.equals("0")){
+
+                preposition = "IS";
+                if(stringYear.equals("0")){
+
+                    stringYear = "TOTAL";
+
+                }
+
+            }else{
+
+                preposition = "WAS";
+
+            }
+
+            //String ageColor = String.valueOf(youngAge);
+            //SpannableString redSpannable= new SpannableString(ageColor);
+            // TODO: Set SpannableString builder.
+            String displayAges = "THE YOUNGEST VICTIM IN "+stringYear+" "+preposition+" "+ String.valueOf(youngAge)+" YEARS OLD AND THE OLDEST "+preposition+" "+String.valueOf(oldAge)+ " YEARS OLD.";
+            youngText.setSelected(true);
+            youngText.setText(displayAges);
 
             // Populate UI with user's chosen data.
             if(year == 0){
