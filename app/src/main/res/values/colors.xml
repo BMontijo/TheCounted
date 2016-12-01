@@ -6,4 +6,7 @@
     <color name="counterColor">#35342E</color>
     <color name="lightBackground">#444444</color>
     <color name="white">#FFFFFF</color>
+    <color name="lightPrimaryColor">#C5CAE9</color>
+    <color name="lightPrimaryOrange">#FF9800</color>
+    <color name="purpleColor">#9C27B0</color>
 </resources>

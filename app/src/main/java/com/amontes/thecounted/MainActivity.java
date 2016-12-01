@@ -21,6 +21,7 @@ import android.view.MenuItem;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -64,8 +65,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         boolean alarmUp = (PendingIntent.getService(this, 0, new Intent(this, ApiService.class), PendingIntent.FLAG_NO_CREATE) != null);
         if(!alarmUp) {
 
-            calendar.set(Calendar.HOUR_OF_DAY, 22);
-            calendar.set(Calendar.MINUTE, 30);
+            Random r = new Random();
+            int lowHour = 22;
+            int highHour = 23;
+            int lowMins = 20;
+            int highMins = 45;
+            int hour = r.nextInt(highHour - lowHour) + lowHour;
+            int mins = r.nextInt(highMins - lowMins) + lowMins;
+
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, mins);
             calendar.set(Calendar.SECOND, 0);
             Intent intent = new Intent(this, ApiService.class);
             intent.putExtra("Progress", false)

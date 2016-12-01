@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -39,6 +40,7 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
     private int year;
     private TextView lastPull;
     private ArrayList<String> titles;
+    private int numUnknown, numWhite, numHispanic, numBlack, numAsian, numNative, numAll;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,33 +120,8 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
         }
 
         mPieChart = (PieChart) view.findViewById(R.id.pieChart);
-        mPieChart.getDescription().setEnabled(true);
-
-        // Change font later!
-        /*Typeface tf = Typeface.createFromAsset(getActivity().getAssets(), "Roboto-Black.ttf");
-
-        mPieChart.setCenterTextTypeface(tf);
-        mPieChart.setCenterText(generateCenterText());
-        mPieChart.setCenterTextSize(10f);
-        mPieChart.setCenterTextTypeface(tf);
-
-        // radius of the center hole in percent of maximum radius
-        mPieChart.setHoleRadius(45f);
-        mPieChart.setTransparentCircleRadius(48f);
-        mPieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
-        mPieChart.setOnChartValueSelectedListener(this);
-
-        Legend l = mPieChart.getLegend();
-        l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
-        l.setOrientation(Legend.LegendOrientation.VERTICAL);
-        l.setDrawInside(false);
-        l.setXEntrySpace(7f);
-        l.setYEntrySpace(0f);
-        l.setYOffset(0f);
-        l.setEnabled(true);
-
-        mPieChart.setData(generatePieData());*/
+        mPieChart.getDescription().setEnabled(false);
+        mPieChart.setDrawEntryLabels(true);
 
         return view;
 
@@ -154,7 +131,51 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
     @Override
     public void onValueSelected(Entry e, Highlight h) {
 
-        Toast.makeText(getActivity(), "More info shown here!", Toast.LENGTH_SHORT).show();
+        int killedAmount = 0;
+        String yearString;
+        String selectedRace = titles.get(Math.round(h.getX()));
+        switch(selectedRace){
+
+            case "Unknown":
+                killedAmount = numUnknown;
+                break;
+
+            case "White":
+                killedAmount = numWhite;
+                break;
+
+            case "Hispanic":
+                killedAmount = numHispanic;
+                break;
+
+            case "Black":
+                killedAmount = numBlack;
+                break;
+
+            case "Asian":
+                killedAmount = numAsian;
+                break;
+
+            case "Native":
+                killedAmount = numNative;
+                break;
+
+            default:
+                break;
+
+        }
+
+        if(year == 0){
+
+            yearString = "Total";
+
+        }else{
+
+            yearString = String.valueOf(year);
+
+        }
+
+        Toast.makeText(getActivity(), selectedRace+": "+String.valueOf(killedAmount)+ " killed in "+yearString+".", Toast.LENGTH_SHORT).show();
 
     }
 
@@ -174,7 +195,6 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
         private int counter5 = 0;
         private int counter6 = 0;
         private int counter7 = 0;
-        private int numUnknown, numWhite, numHispanic, numBlack, numAsian, numNative, numAll;
         private String yearArg;
 
         @Override
@@ -283,12 +303,28 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
             // Change font later!
             Typeface tf = Typeface.createFromAsset(getActivity().getAssets(), "Roboto-Black.ttf");
 
+            Legend l = mPieChart.getLegend();
+            l.setTextColor(Color.WHITE);
+            l.setFormSize(14f);
+            l.setForm(Legend.LegendForm.CIRCLE);
+            l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+            l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+            l.setOrientation(Legend.LegendOrientation.VERTICAL);
+            l.setDrawInside(true);
+            l.setTextSize(12f);
+            l.setXEntrySpace(7f);
+            l.setYEntrySpace(0f);
+            l.setYOffset(0f);
+            l.setEnabled(true);
+
             mPieChart.setCenterTextTypeface(tf);
+            // Toggle labels on/off.
+            mPieChart.setDrawEntryLabels(false);
             mPieChart.setCenterText(generateCenterText());
-            mPieChart.setCenterTextSize(10f);
+            mPieChart.setCenterTextSize(12f);
             mPieChart.setCenterTextTypeface(tf);
-            // radius of the center hole in percent of maximum radius
-            mPieChart.setHoleRadius(40f);
+            // Radius of the center hole in percent of maximum radius
+            mPieChart.setHoleRadius(38f);
             mPieChart.setTransparentCircleRadius(42f);
             mPieChart.animateY(650, Easing.EasingOption.EaseInOutQuad);
             mPieChart.setOnChartValueSelectedListener(GraphingFragment.this);
@@ -300,14 +336,14 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
 
             ArrayList<PieEntry> pieEntries = new ArrayList<>();
 
-            pieEntries.add(new PieEntry(numUnknown));
-            pieEntries.add(new PieEntry(numWhite));
-            pieEntries.add(new PieEntry(numHispanic));
-            pieEntries.add(new PieEntry(numBlack));
-            pieEntries.add(new PieEntry(numAsian));
-            pieEntries.add(new PieEntry(numNative));
+            pieEntries.add(new PieEntry(numUnknown, titles.get(0)));
+            pieEntries.add(new PieEntry(numWhite, titles.get(1)));
+            pieEntries.add(new PieEntry(numHispanic, titles.get(2)));
+            pieEntries.add(new PieEntry(numBlack, titles.get(3)));
+            pieEntries.add(new PieEntry(numAsian, titles.get(4)));
+            pieEntries.add(new PieEntry(numNative, titles.get(5)));
 
-            PieDataSet pieDataSet = new PieDataSet(pieEntries, "Deaths by race.");
+            PieDataSet pieDataSet = new PieDataSet(pieEntries, "");
 
             // Colors.
             ArrayList<Integer> colors = new ArrayList<>();
@@ -315,14 +351,25 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
             // TODO: Add two more colors!!!!
             colors.add(ContextCompat.getColor(getActivity(), R.color.colorAccent));
             colors.add(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
-            colors.add(ContextCompat.getColor(getActivity(), R.color.colorPrimaryDark));
+            colors.add(ContextCompat.getColor(getActivity(), R.color.lightPrimaryColor));
             colors.add(ContextCompat.getColor(getActivity(), R.color.counterColor));
-            pieDataSet.setSliceSpace(2);
+            colors.add(ContextCompat.getColor(getActivity(), R.color.lightPrimaryOrange));
+            colors.add(ContextCompat.getColor(getActivity(), R.color.purpleColor));
+            pieDataSet.setSliceSpace(0.05f);
+            pieDataSet.setSelectionShift(12f);
             pieDataSet.setColors(colors);
+            //pieDataSet.setDrawValues(false);
+            //generatePieData().setDrawValues(false);
+
+            pieDataSet.setValueLinePart1Length(0.5f);
+            pieDataSet.setValueLinePart2Length(0.4f);
+            pieDataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+            pieDataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+
 
             PieData pieData = new PieData(pieDataSet);
             //pieData.setValueFormatter(new PercentFormatter());
-            pieData.setValueTextSize(11f);
+            pieData.setValueTextSize(8f);
             pieData.setValueTextColor(Color.WHITE);
             pieData.setValueTextSize(16);
 
