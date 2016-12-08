@@ -18,10 +18,11 @@
         android:id="@+id/updateTimeGraph"
         android:layout_alignParentBottom="true" />
 
-    <com.github.mikephil.charting.charts.PieChart
+    <com.github.mikephil.charting.charts.HorizontalBarChart
         android:layout_marginTop="?android:actionBarSize"
+        android:layout_marginBottom="?android:actionBarSize"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:id="@+id/pieChart" />
+        android:id="@+id/barChart" />
 
 </RelativeLayout>

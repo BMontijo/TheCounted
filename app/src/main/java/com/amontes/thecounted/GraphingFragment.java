@@ -1,16 +1,13 @@
 package com.amontes.thecounted;
 
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,14 +17,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.animation.Easing;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.charts.HorizontalBarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import java.util.ArrayList;
@@ -36,18 +34,17 @@ import java.util.Calendar;
 public class GraphingFragment extends Fragment implements OnChartValueSelectedListener{
 
     private static final String TAG = "GraphingFragment";
-    private PieChart mPieChart;
+    Typeface tf;
+    //private PieChart mPieChart;
+    private HorizontalBarChart mBarChart;
     private int year;
-    private TextView lastPull;
-    private ArrayList<String> titles;
-    private int numUnknown, numWhite, numHispanic, numBlack, numAsian, numNative, numAll;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Chart titles.
-        titles = new ArrayList<>();
+        ArrayList<String> titles = new ArrayList<>();
         titles.add("Unknown");
         titles.add("White");
         titles.add("Hispanic");
@@ -109,7 +106,7 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
 
         View view = inflater.inflate(R.layout.fragment_graphing, container, false);
 
-        lastPull = (TextView) view.findViewById(R.id.updateTimeGraph);
+        TextView lastPull = (TextView) view.findViewById(R.id.updateTimeGraph);
 
         // Show last updated data.
         if(lastPull.getText().equals("")){
@@ -119,9 +116,43 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
 
         }
 
-        mPieChart = (PieChart) view.findViewById(R.id.pieChart);
-        mPieChart.getDescription().setEnabled(false);
-        mPieChart.setDrawEntryLabels(true);
+        mBarChart = (HorizontalBarChart) view.findViewById(R.id.barChart);
+        mBarChart.setOnChartValueSelectedListener(GraphingFragment.this);
+        mBarChart.getDescription().setEnabled(false);
+        mBarChart.setMaxVisibleValueCount(6);
+        mBarChart.setPinchZoom(false);
+        mBarChart.setDoubleTapToZoomEnabled(false);
+
+        // X axis start.
+        tf = Typeface.createFromAsset(getActivity().getAssets(), "Roboto-Black.ttf");
+        XAxis xl = mBarChart.getXAxis();
+        //xl.setDrawGridLines(false);
+        xl.setPosition(XAxis.XAxisPosition.BOTTOM_INSIDE);
+        xl.setTypeface(tf);
+        xl.setDrawAxisLine(true);
+        xl.setDrawGridLines(false);
+        xl.setGranularity(10f);
+
+        // Y axis start.
+        YAxis yl = mBarChart.getAxisLeft();
+        yl.setTypeface(tf);
+        yl.setDrawAxisLine(true);
+        yl.setDrawGridLines(false);
+        yl.setAxisMinimum(0f);
+
+        // Y axis end.
+        YAxis yr = mBarChart.getAxisRight();
+        yr.setTypeface(tf);
+        yr.setDrawAxisLine(true);
+        yr.setDrawGridLines(false);
+        yr.setAxisMinimum(0f);
+
+        mBarChart.setFitBars(true);
+        mBarChart.animateY(1800);
+        mBarChart.setPinchZoom(false);
+        mBarChart.setDoubleTapToZoomEnabled(false);
+        //mBarChart.setGridBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
+        //mBarChart.setDrawGridBackground(false);
 
         return view;
 
@@ -131,7 +162,7 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
     @Override
     public void onValueSelected(Entry e, Highlight h) {
 
-        int killedAmount = 0;
+        /*int killedAmount = 0;
         String yearString;
         String selectedRace = titles.get(Math.round(h.getX()));
         switch(selectedRace){
@@ -173,9 +204,9 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
 
             yearString = String.valueOf(year);
 
-        }
+        }*/
 
-        Toast.makeText(getActivity(), selectedRace+": "+String.valueOf(killedAmount)+ " killed in "+yearString+".", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "Pressed!", Toast.LENGTH_SHORT).show();
 
     }
 
@@ -196,6 +227,7 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
         private int counter6 = 0;
         private int counter7 = 0;
         private String yearArg;
+        private ArrayList<Integer> totalsArray = new ArrayList<>();
 
         @Override
         protected String doInBackground(Integer... params) {
@@ -285,13 +317,15 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
 
             }
 
-            numUnknown = counter1 + counter7;
-            numWhite = counter2;
-            numHispanic = counter3;
-            numBlack = counter4;
-            numAsian = counter5;
-            numNative = counter6;
-            numAll = numUnknown+numWhite+numHispanic+numBlack+numAsian+numNative;
+            int numUnknown = counter1 + counter7;
+            int numWhite = counter2;
+            int numHispanic = counter3;
+            int numBlack = counter4;
+            int numAsian = counter5;
+            int numNative = counter6;
+            int numAll = numUnknown + numWhite + numHispanic + numBlack + numAsian + numNative;
+            totalsArray.add(numUnknown); totalsArray.add(numWhite); totalsArray.add(numHispanic);
+            totalsArray.add(numBlack); totalsArray.add(numAsian); totalsArray.add(numNative);
             return null;
 
         }
@@ -300,84 +334,62 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             // Create chart data and populate UI.
-            // Change font later!
-            Typeface tf = Typeface.createFromAsset(getActivity().getAssets(), "Roboto-Black.ttf");
+            float barWidth = 4f;
+            float spaceForBar = 5f;
+            String yearString;
+            ArrayList<BarEntry> yVals1 = new ArrayList<>();
 
-            Legend l = mPieChart.getLegend();
-            l.setTextColor(Color.WHITE);
-            l.setFormSize(14f);
-            l.setForm(Legend.LegendForm.CIRCLE);
-            l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-            l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-            l.setOrientation(Legend.LegendOrientation.VERTICAL);
-            l.setDrawInside(true);
-            l.setTextSize(12f);
-            l.setXEntrySpace(7f);
-            l.setYEntrySpace(0f);
-            l.setYOffset(0f);
-            l.setEnabled(true);
+            for (int i = 0; i < totalsArray.size(); i++) {
 
-            mPieChart.setCenterTextTypeface(tf);
-            // Toggle labels on/off.
-            mPieChart.setDrawEntryLabels(false);
-            mPieChart.setCenterText(generateCenterText());
-            mPieChart.setCenterTextSize(12f);
-            mPieChart.setCenterTextTypeface(tf);
-            // Radius of the center hole in percent of maximum radius
-            mPieChart.setHoleRadius(38f);
-            mPieChart.setTransparentCircleRadius(42f);
-            mPieChart.animateY(650, Easing.EasingOption.EaseInOutQuad);
-            mPieChart.setOnChartValueSelectedListener(GraphingFragment.this);
-            mPieChart.setData(generatePieData());
+                int val = totalsArray.get(i);
+                Log.d(TAG, "THIS NUMBER IS: "+totalsArray.get(i));
+                yVals1.add(new BarEntry(i * spaceForBar, val));
 
-        }
+            }
 
-        private PieData generatePieData() {
+            BarDataSet set1;
 
-            ArrayList<PieEntry> pieEntries = new ArrayList<>();
+            if (mBarChart.getData() != null && mBarChart.getData().getDataSetCount() > 0) {
 
-            pieEntries.add(new PieEntry(numUnknown, titles.get(0)));
-            pieEntries.add(new PieEntry(numWhite, titles.get(1)));
-            pieEntries.add(new PieEntry(numHispanic, titles.get(2)));
-            pieEntries.add(new PieEntry(numBlack, titles.get(3)));
-            pieEntries.add(new PieEntry(numAsian, titles.get(4)));
-            pieEntries.add(new PieEntry(numNative, titles.get(5)));
+                set1 = (BarDataSet)mBarChart.getData().getDataSetByIndex(0);
+                set1.setValues(yVals1);
+                set1.setColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
+                mBarChart.getData().notifyDataChanged();
+                mBarChart.notifyDataSetChanged();
+                mBarChart.animateY(1800);
+                mBarChart.invalidate();
 
-            PieDataSet pieDataSet = new PieDataSet(pieEntries, "");
+            } else {
 
-            // Colors.
-            ArrayList<Integer> colors = new ArrayList<>();
+                if(year == 0){
 
-            // TODO: Add two more colors!!!!
-            colors.add(ContextCompat.getColor(getActivity(), R.color.colorAccent));
-            colors.add(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
-            colors.add(ContextCompat.getColor(getActivity(), R.color.lightPrimaryColor));
-            colors.add(ContextCompat.getColor(getActivity(), R.color.counterColor));
-            colors.add(ContextCompat.getColor(getActivity(), R.color.lightPrimaryOrange));
-            colors.add(ContextCompat.getColor(getActivity(), R.color.purpleColor));
-            pieDataSet.setSliceSpace(0.05f);
-            pieDataSet.setSelectionShift(12f);
-            pieDataSet.setColors(colors);
-            //pieDataSet.setDrawValues(false);
-            //generatePieData().setDrawValues(false);
+                    yearString = "Total";
 
-            pieDataSet.setValueLinePart1Length(0.5f);
-            pieDataSet.setValueLinePart2Length(0.4f);
-            pieDataSet.setXValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
-            pieDataSet.setYValuePosition(PieDataSet.ValuePosition.OUTSIDE_SLICE);
+                }else{
 
+                    yearString = String.valueOf(year);
 
-            PieData pieData = new PieData(pieDataSet);
-            //pieData.setValueFormatter(new PercentFormatter());
-            pieData.setValueTextSize(8f);
-            pieData.setValueTextColor(Color.WHITE);
-            pieData.setValueTextSize(16);
+                }
 
-            return pieData;
+                set1 = new BarDataSet(yVals1, yearString);
+                set1.setColor(ContextCompat.getColor(getActivity(), R.color.colorPrimary));
+
+                ArrayList<IBarDataSet> dataSets = new ArrayList<>();
+                dataSets.add(set1);
+
+                BarData data = new BarData(dataSets);
+                data.setValueTextSize(10f);
+                data.setValueTypeface(tf);
+                data.setBarWidth(barWidth);
+                mBarChart.setData(data);
+                mBarChart.animateY(1800);
+                mBarChart.invalidate();
+
+            }
 
         }
 
-        private SpannableString generateCenterText() {
+        /*private SpannableString generateCenterText() {
             SpannableString s;
             if(yearArg.equals("2015") || yearArg.equals("2016")) {
 
@@ -395,7 +407,7 @@ public class GraphingFragment extends Fragment implements OnChartValueSelectedLi
 
             return s;
 
-        }
+        }*/
 
     }
 
