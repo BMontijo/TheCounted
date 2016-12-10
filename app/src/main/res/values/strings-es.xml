@@ -6,13 +6,13 @@
     <string name="action_settings">Ajustes</string>
     <string name="count_placeholder">000</string>
     <string name="ticker_background">ticker_background</string>
-    <string name="people_killed_in">PERSONAS MATADA EN</string>
+    <string name="people_killed_in">PERSONAS ASESINADAS EN</string>
     <string name="the_counted">Los contados</string>
-    <string name="people_killed_by_police_in_the_us">People killed by police in the US</string>
-    <string name="total">Total</string>
+    <string name="people_killed_by_police_in_the_us">Personas asesinadas en los E.E.U.U por policía</string>
+    <string name="total"> Total</string>
     <string name="_2016">2016</string>
     <string name="_2015">2015</string>
     <string name="nav_drawer_icon">nav drawer icon</string>
-    <string name="race_child">Race And Ethnicity</string>
+    <string name="race_child">Raza Y Etnicidad</string>
     <string name="total_label_home">TOTAL</string>
 </resources>
